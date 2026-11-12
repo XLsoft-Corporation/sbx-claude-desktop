@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TODO</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 520px; margin: 2rem auto; padding: 0 1rem; }
+    form { display: flex; gap: .5rem; }
+    input[type=text] { flex: 1; padding: .5rem; }
+    ul { list-style: none; padding: 0; }
+    li { display: flex; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid #ddd; }
+    li span { flex: 1; }
+    li.done span { text-decoration: line-through; color: #888; }
+  </style>
+</head>
+<body>
+  <h1>TODO</h1>
+  <form id="form">
+    <input type="text" id="title" placeholder="やること" required autofocus>
+    <button>追加</button>
+  </form>
+  <ul id="list"></ul>
+  <script>
+    const list = document.getElementById('list');
+    const api = (url, opts = {}) =>
+      fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+
+    async function load() {
+      const todos = await (await api('/api/todos')).json();
+      list.innerHTML = '';
+      for (const t of todos) {
+        const li = document.createElement('li');
+        if (t.done) li.className = 'done';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = t.done;
+        cb.onchange = async () => {
+          await api(`/api/todos/${t.id}`, { method: 'PATCH', body: JSON.stringify({ done: cb.checked }) });
+          load();
+        };
+        const span = document.createElement('span');
+        span.textContent = t.title;
+        const del = document.createElement('button');
+        del.textContent = '削除';
+        del.onclick = async () => {
+          await api(`/api/todos/${t.id}`, { method: 'DELETE' });
+          load();
+        };
+        li.append(cb, span, del);
+        list.append(li);
+      }
+    }
+
+    document.getElementById('form').onsubmit = async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('title');
+      await api('/api/todos', { method: 'POST', body: JSON.stringify({ title: input.value }) });
+      input.value = '';
+      load();
+    };
+
+    load();
+  </script>
+</body>
+</html>

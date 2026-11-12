@@ -1,0 +1,16 @@
+{
+  "name": "sbx-claude-desktop-todo",
+  "version": "1.0.0",
+  "description": "Basic TODO app with Express and node:sqlite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
